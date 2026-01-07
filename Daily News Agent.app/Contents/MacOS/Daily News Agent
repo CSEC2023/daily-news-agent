@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Obtenir le chemin du projet
+PROJECT_DIR="/Users/mauraisingabriel/.gemini/antigravity/scratch/daily-news-agent"
+
+# Ouvrir un terminal et lancer l'application
+osascript <<APPLESCRIPT
+tell application "Terminal"
+    activate
+    do script "cd '$PROJECT_DIR' && ./start.sh"
+end tell
+APPLESCRIPT

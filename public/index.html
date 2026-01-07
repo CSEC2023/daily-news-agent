@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily News Agent - Actualités Financières & Tech</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">📰</span>
+                    <span class="logo-text">Daily News Agent</span>
+                </h1>
+                <div class="header-actions">
+                    <button id="refreshBtn" class="btn btn-secondary">
+                        <span class="btn-icon">🔄</span>
+                        Actualiser
+                    </button>
+                    <div class="theme-toggle">
+                        <span class="theme-icon">🌙</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Daily Summary Section -->
+            <section class="summary-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">📊</span>
+                        Résumé Quotidien
+                    </h2>
+                    <div class="section-meta" id="lastUpdate">
+                        Chargement...
+                    </div>
+                </div>
+                <div class="summary-card" id="dailySummary">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Génération du résumé quotidien...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section class="stats-section">
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📰</div>
+                        <div class="stat-value" id="totalArticles">-</div>
+                        <div class="stat-label">Articles importants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-value" id="avgScore">-</div>
+                        <div class="stat-label">Score moyen</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📂</div>
+                        <div class="stat-value" id="categoriesCount">-</div>
+                        <div class="stat-label">Catégories</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-value" id="topScore">-</div>
+                        <div class="stat-label">Meilleur score</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category Tabs -->
+            <section class="articles-section">
+                <div class="tabs">
+                    <button class="tab active" data-category="all">
+                        <span class="tab-icon">🌐</span>
+                        Tout
+                    </button>
+                    <button class="tab" data-category="finance">
+                        <span class="tab-icon">💰</span>
+                        Finance
+                    </button>
+                    <button class="tab" data-category="bourse">
+                        <span class="tab-icon">📈</span>
+                        Bourse
+                    </button>
+                    <button class="tab" data-category="ai">
+                        <span class="tab-icon">🤖</span>
+                        IA
+                    </button>
+                    <button class="tab" data-category="healthcare">
+                        <span class="tab-icon">🏥</span>
+                        Santé
+                    </button>
+                    <button class="tab" data-category="tech">
+                        <span class="tab-icon">💻</span>
+                        Tech
+                    </button>
+                    <button class="tab" data-category="europe">
+                        <span class="tab-icon">🇪🇺</span>
+                        Europe
+                    </button>
+                    <button class="tab" data-category="france">
+                        <span class="tab-icon">🇫🇷</span>
+                        France
+                    </button>
+                    <button class="tab" data-category="monde">
+                        <span class="tab-icon">🌍</span>
+                        Monde
+                    </button>
+                    <button class="tab" data-category="general">
+                        <span class="tab-icon">🌎</span>
+                        Général
+                    </button>
+                </div>
+
+                <!-- Articles Grid -->
+                <div class="articles-grid" id="articlesGrid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Chargement des articles...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>Daily News Agent - Actualités financières et technologiques intelligentes</p>
+            <p class="footer-meta">Propulsé par l'IA • Sources: Financial Times, Reuters, Bloomberg, Le Monde, Le
+                Figaro, Euronews et plus</p>
+        </div>
+    </footer>
+
+    <!-- Chat Assistant -->
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            <div class="chat-header-content">
+                <span class="chat-icon">🤖</span>
+                <span class="chat-title">Assistant IA</span>
+            </div>
+            <button class="chat-close" id="chatClose">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message ai-message">
+                <div class="message-content">
+                    👋 Bonjour ! Je suis votre assistant IA. Posez-moi des questions sur l'actualité du jour !
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Posez une question sur l'actualité...">
+            <button id="chatSend" class="chat-send">
+                <span>➤</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <button class="chat-toggle" id="chatToggle">
+        <span class="chat-toggle-icon">💬</span>
+        <span class="chat-toggle-text">Assistant IA</span>
+    </button>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
