@@ -21,7 +21,8 @@ app.use(express.static('public'));
 let newsCache = {
     data: null,
     timestamp: null,
-    summaries: null
+    summaries: null,
+    marketRecap: null
 };
 
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
@@ -32,20 +33,20 @@ const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 async function getNews(forceRefresh = false) {
     const now = Date.now();
 
-    if (!forceRefresh && newsCache.data && newsCache.timestamp &&
-        (now - newsCache.timestamp < CACHE_DURATION)) {
-        console.log('📦 Returning cached news');
-        return newsCache.data;
+    if (!forceRefresh && newsCache.data && newsCache.timestamp) {
+        const cacheAge = now - newsCache.timestamp;
+        if (cacheAge < CACHE_DURATION) {
+            console.log('📦 Returning cached news');
+            return newsCache.data;
+        }
     }
 
     console.log('🔄 Fetching fresh news...');
-    const minScore = parseInt(process.env.MIN_IMPORTANCE_SCORE) || 7;
-    const maxArticles = parseInt(process.env.MAX_ARTICLES_PER_CATEGORY) || 10;
-
+    const minScore = 6.0; // Abaissé à 6.0 pour permettre les catégories de niche
     const newsData = await fetchAllNews({
         category: 'all',
         minImportanceScore: minScore,
-        maxArticlesPerCategory: maxArticles,
+        maxArticlesPerCategory: 10,
         onlyYesterday: true
     });
 
@@ -70,6 +71,7 @@ async function getSummaries(forceRefresh = false) {
     const summaries = await generateAllSummaries(newsData.articlesByCategory);
 
     newsCache.summaries = summaries;
+    newsCache.marketRecap = summaries.marketRecap;
     return summaries;
 }
 
@@ -188,6 +190,38 @@ app.get('/api/summary/:category', async (req, res) => {
         });
     } catch (error) {
         console.error(`Error in /api/summary/${req.params.category}:`, error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/market-recap
+ * Récupère le market recap (Equity, FX, Credit, Rates)
+ */
+app.get('/api/market-recap', async (req, res) => {
+    try {
+        const forceRefresh = req.query.refresh === 'true';
+        const summaries = await getSummaries(forceRefresh);
+
+        if (!summaries.marketRecap) {
+            return res.status(404).json({
+                success: false,
+                error: 'Market recap not available'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: {
+                marketRecap: summaries.marketRecap
+            },
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error in /api/market-recap:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -358,6 +392,7 @@ app.listen(PORT, () => {
     console.log(`   GET  /api/news/:category    - Articles by category`);
     console.log(`   GET  /api/summary           - Daily summary`);
     console.log(`   GET  /api/summary/:category - Category summary`);
+    console.log(`   GET  /api/market-recap      - Market recap (Equity, FX, Credit, Rates)`);
     console.log(`   GET  /api/stats             - Statistics`);
     console.log(`   POST /api/refresh           - Force refresh`);
     console.log('\n💡 Categories: finance, ai, healthcare, tech, general');

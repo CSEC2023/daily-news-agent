@@ -334,6 +334,89 @@ body::before {
     font-weight: 500;
 }
 
+/* ===== MARKET RECAP SECTION ===== */
+.market-recap-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.market-recap-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.market-recap-card {
+    background: var(--color-surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+.market-recap-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.market-recap-header {
+    padding: var(--spacing-md) var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.market-recap-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    opacity: 0.9;
+    z-index: 0;
+}
+
+.market-recap-icon {
+    font-size: 1.75rem;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.market-recap-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.market-recap-content {
+    padding: var(--spacing-lg);
+}
+
+.market-recap-content p {
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* Responsive design for market recap */
+@media (max-width: 768px) {
+    .market-recap-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ===== TABS ===== */
 .tabs {
     display: flex;

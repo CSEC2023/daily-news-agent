@@ -362,6 +362,64 @@ const NEWS_SOURCES = {
             requiresAuth: false,
             description: 'Marchés financiers français'
         }
+    ],
+
+    // ===== ADTECH / MEDIA - Marketing et publicité digitale =====
+    adtech: [
+        {
+            name: 'AdAge',
+            url: 'https://adage.com/rss',
+            type: 'rss',
+            priority: 10,
+            category: 'adtech',
+            requiresAuth: false,
+            description: 'Actualités publicitaires et marketing'
+        },
+        {
+            name: 'Marketing Dive',
+            url: 'https://www.marketingdive.com/feeds/news/',
+            type: 'rss',
+            priority: 9,
+            category: 'adtech',
+            requiresAuth: false,
+            description: 'Marketing et stratégies digitales'
+        },
+        {
+            name: 'AdExchanger',
+            url: 'https://www.adexchanger.com/feed/',
+            type: 'rss',
+            priority: 10,
+            category: 'adtech',
+            requiresAuth: false,
+            description: 'Technologie publicitaire et programmatique'
+        },
+        {
+            name: 'Digiday',
+            url: 'https://digiday.com/feed/',
+            type: 'rss',
+            priority: 9,
+            category: 'adtech',
+            requiresAuth: false,
+            description: 'Média et marketing digital'
+        },
+        {
+            name: 'The Drum',
+            url: 'https://www.thedrum.com/rss/news',
+            type: 'rss',
+            priority: 8,
+            category: 'adtech',
+            requiresAuth: false,
+            description: 'Marketing, publicité et médias'
+        },
+        {
+            name: 'Marketing Week',
+            url: 'https://www.marketingweek.com/feed/',
+            type: 'rss',
+            priority: 8,
+            category: 'adtech',
+            requiresAuth: false,
+            description: 'Stratégies marketing et tendances'
+        }
     ]
 };
 
@@ -446,6 +504,22 @@ const IMPORTANCE_KEYWORDS = {
         'bull market', 'bear market', 'rally', 'correction',
         'volatility', 'volatilité', 'index', 'indice',
         'wall street', 'nyse', 'euronext', 'trading volume'
+    ],
+
+    // AdTech / Media - publicité et marketing digital
+    adtech: [
+        'advertising', 'publicité', 'ad tech', 'adtech', 'marketing',
+        'programmatic', 'programmatique', 'rtb', 'real-time bidding',
+        'dsp', 'ssp', 'ad exchange', 'media buying', 'achat média',
+        'campaign', 'campagne', 'brand', 'marque', 'creative', 'créatif',
+        'social media', 'réseaux sociaux', 'influencer', 'influenceur',
+        'content marketing', 'marketing de contenu', 'seo', 'sem',
+        'google ads', 'facebook ads', 'tiktok', 'instagram',
+        'privacy', 'confidentialité', 'cookies', 'gdpr', 'tracking',
+        'attribution', 'conversion', 'roi', 'cpm', 'cpc', 'ctr',
+        'video advertising', 'publicité vidéo', 'streaming', 'ctv',
+        'retail media', 'commerce media', 'amazon ads', 'walmart',
+        'measurement', 'mesure', 'analytics', 'data', 'données'
     ]
 };
 

@@ -43,24 +43,27 @@ async function loadAllData() {
     showLoading();
 
     try {
-        // Charger les news et le résumé en parallèle
-        const [newsResponse, summaryResponse] = await Promise.all([
+        // Charger les news, le résumé et le market recap en parallèle
+        const [newsResponse, summaryResponse, marketRecapResponse] = await Promise.all([
             fetch('/api/news'),
-            fetch('/api/summary')
+            fetch('/api/summary'),
+            fetch('/api/market-recap')
         ]);
 
-        if (!newsResponse.ok || !summaryResponse.ok) {
+        if (!newsResponse.ok || !summaryResponse.ok || !marketRecapResponse.ok) {
             throw new Error('Failed to fetch data');
         }
 
         const newsResult = await newsResponse.json();
         const summaryResult = await summaryResponse.json();
+        const marketRecapResult = await marketRecapResponse.json();
 
         newsData = newsResult.data;
         summaries = { daily: summaryResult.data.summary };
 
         // Afficher les données
         displaySummary(summaries.daily);
+        displayMarketRecap(marketRecapResult.data.marketRecap);
         displayStats(newsData);
         displayArticles(currentCategory);
         updateLastUpdate();
@@ -166,6 +169,66 @@ function displayStats(data) {
 }
 
 /**
+ * Affiche le market recap
+ */
+function displayMarketRecap(marketRecap) {
+    const marketRecapGrid = document.getElementById('marketRecapGrid');
+
+    if (!marketRecap) {
+        marketRecapGrid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <p>Market recap non disponible.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const categories = [
+        {
+            key: 'equity',
+            title: 'Equity',
+            icon: '📈',
+            gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderColor: '#667eea'
+        },
+        {
+            key: 'fx',
+            title: 'FX',
+            icon: '💱',
+            gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            borderColor: '#f093fb'
+        },
+        {
+            key: 'credit',
+            title: 'Credit',
+            icon: '💳',
+            gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            borderColor: '#4facfe'
+        },
+        {
+            key: 'rates',
+            title: 'Rates',
+            icon: '📊',
+            gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+            borderColor: '#43e97b'
+        }
+    ];
+
+    marketRecapGrid.innerHTML = categories.map(cat => `
+        <div class="market-recap-card" style="border-left: 4px solid ${cat.borderColor};">
+            <div class="market-recap-header" style="background: ${cat.gradient};">
+                <span class="market-recap-icon">${cat.icon}</span>
+                <h3 class="market-recap-title">${cat.title}</h3>
+            </div>
+            <div class="market-recap-content">
+                <p>${marketRecap[cat.key] || 'Aucune donnée disponible.'}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
  * Affiche les articles
  */
 function displayArticles(category) {
@@ -204,25 +267,40 @@ function displayArticles(category) {
 function createArticleCard(article) {
     const categoryIcons = {
         finance: '💰',
+        bourse: '📈',
+        adtech: '📱',
         ai: '🤖',
         healthcare: '🏥',
         tech: '💻',
-        general: '🌍'
+        europe: '🇪🇺',
+        france: '🇫🇷',
+        monde: '🌍',
+        general: '🌎'
     };
 
     const categoryColors = {
         finance: 'rgba(245, 158, 11, 0.2)',
+        bourse: 'rgba(34, 197, 94, 0.2)',
+        adtech: 'rgba(236, 72, 153, 0.2)',
         ai: 'rgba(139, 92, 246, 0.2)',
         healthcare: 'rgba(16, 185, 129, 0.2)',
         tech: 'rgba(59, 130, 246, 0.2)',
+        europe: 'rgba(59, 130, 246, 0.2)',
+        france: 'rgba(99, 102, 241, 0.2)',
+        monde: 'rgba(107, 114, 128, 0.2)',
         general: 'rgba(107, 114, 128, 0.2)'
     };
 
     const categoryBorders = {
         finance: 'rgba(245, 158, 11, 0.3)',
+        bourse: 'rgba(34, 197, 94, 0.3)',
+        adtech: 'rgba(236, 72, 153, 0.3)',
         ai: 'rgba(139, 92, 246, 0.3)',
         healthcare: 'rgba(16, 185, 129, 0.3)',
         tech: 'rgba(59, 130, 246, 0.3)',
+        europe: 'rgba(59, 130, 246, 0.3)',
+        france: 'rgba(99, 102, 241, 0.3)',
+        monde: 'rgba(107, 114, 128, 0.3)',
         general: 'rgba(107, 114, 128, 0.3)'
     };
 

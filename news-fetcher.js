@@ -87,6 +87,79 @@ function isFromYesterday(article) {
 }
 
 /**
+ * Calcule la similarité entre deux titres (0-1)
+ * Utilise la distance de Levenshtein normalisée
+ */
+function calculateTitleSimilarity(title1, title2) {
+    const s1 = title1.toLowerCase().trim();
+    const s2 = title2.toLowerCase().trim();
+
+    // Si les titres sont identiques
+    if (s1 === s2) return 1.0;
+
+    // Calculer la distance de Levenshtein
+    const matrix = [];
+    const len1 = s1.length;
+    const len2 = s2.length;
+
+    for (let i = 0; i <= len1; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+        matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= len1; i++) {
+        for (let j = 1; j <= len2; j++) {
+            const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j - 1] + cost
+            );
+        }
+    }
+
+    const distance = matrix[len1][len2];
+    const maxLength = Math.max(len1, len2);
+    return 1 - (distance / maxLength);
+}
+
+/**
+ * Supprime les articles en double basés sur la similarité des titres
+ */
+function removeDuplicates(articles, similarityThreshold = 0.85) {
+    const uniqueArticles = [];
+    const seen = new Set();
+
+    for (const article of articles) {
+        let isDuplicate = false;
+
+        // Vérifier si un article similaire existe déjà
+        for (const uniqueArticle of uniqueArticles) {
+            const similarity = calculateTitleSimilarity(article.title, uniqueArticle.title);
+
+            if (similarity >= similarityThreshold) {
+                isDuplicate = true;
+                // Garder l'article avec le meilleur score
+                if (article.importanceScore > uniqueArticle.importanceScore) {
+                    // Remplacer l'article existant par le nouveau
+                    const index = uniqueArticles.indexOf(uniqueArticle);
+                    uniqueArticles[index] = article;
+                }
+                break;
+            }
+        }
+
+        if (!isDuplicate) {
+            uniqueArticles.push(article);
+        }
+    }
+
+    return uniqueArticles;
+}
+
+/**
  * Récupère les articles d'une source RSS
  */
 async function fetchFromRSS(source) {
@@ -120,7 +193,7 @@ async function fetchFromRSS(source) {
 async function fetchAllNews(options = {}) {
     const {
         category = 'all',
-        minImportanceScore = 7,
+        minImportanceScore = 6.0, // Abaissé à 6.0 pour permettre les catégories de niche
         maxArticlesPerCategory = 10,
         onlyYesterday = true
     } = options;
@@ -169,22 +242,46 @@ async function fetchAllNews(options = {}) {
     // Trier par score d'importance (décroissant)
     importantArticles.sort((a, b) => b.importanceScore - a.importanceScore);
 
-    // Grouper par catégorie et limiter le nombre
+    // NOUVEAU: Supprimer les doublons basés sur la similarité des titres
+    const uniqueArticles = removeDuplicates(importantArticles, 0.85);
+    console.log(`🔍 After deduplication: ${uniqueArticles.length} unique articles`);
+
+    // Définir des scores minimums par catégorie (plus indulgent pour les niches)
+    const categoryMinScores = {
+        adtech: 6.0,      // Catégorie de niche - très indulgent
+        healthcare: 6.5,  // Catégorie de niche - plus indulgent
+        tech: 7.0,        // Catégorie populaire mais spécialisée
+        ai: 7.0,          // Catégorie populaire mais spécialisée
+        finance: 7.5,     // Catégorie principale - strict
+        bourse: 7.5,      // Catégorie principale - strict
+        monde: 7.5,       // Catégorie principale - strict
+        europe: 7.0,      // Catégorie régionale
+        france: 7.0,      // Catégorie régionale
+        general: 7.5      // Catégorie principale - strict
+    };
+
+    // Grouper par catégorie avec scores minimums adaptés
     const articlesByCategory = {};
-    importantArticles.forEach(article => {
+    uniqueArticles.forEach(article => {
         const cat = article.category;
-        if (!articlesByCategory[cat]) {
-            articlesByCategory[cat] = [];
-        }
-        if (articlesByCategory[cat].length < maxArticlesPerCategory) {
-            articlesByCategory[cat].push(article);
+        const minScore = categoryMinScores[cat] || 7.0; // Score par défaut: 7.0
+
+        // Appliquer le score minimum spécifique à la catégorie
+        if (article.importanceScore >= minScore) {
+            if (!articlesByCategory[cat]) {
+                articlesByCategory[cat] = [];
+            }
+            if (articlesByCategory[cat].length < maxArticlesPerCategory) {
+                articlesByCategory[cat].push(article);
+            }
         }
     });
 
     // Afficher les statistiques
     console.log('\n📈 Articles by category:');
     Object.entries(articlesByCategory).forEach(([cat, articles]) => {
-        console.log(`  ${cat}: ${articles.length} articles`);
+        const minScore = categoryMinScores[cat] || 7.0;
+        console.log(`  ${cat}: ${articles.length} articles (min score: ${minScore})`);
     });
 
     // Retourner les articles triés
@@ -200,6 +297,7 @@ async function fetchAllNews(options = {}) {
             totalFetched: allArticles.length,
             afterDateFilter: filteredArticles.length,
             afterImportanceFilter: importantArticles.length,
+            afterDeduplication: uniqueArticles.length,
             final: finalArticles.length
         }
     };
@@ -211,7 +309,7 @@ async function fetchAllNews(options = {}) {
 async function fetchTopArticles(category, limit = 5) {
     const result = await fetchAllNews({
         category,
-        minImportanceScore: 7,
+        minImportanceScore: 6.0,
         maxArticlesPerCategory: limit,
         onlyYesterday: true
     });

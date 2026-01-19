@@ -237,6 +237,144 @@ function generateBasicCategorySummary(category, articles) {
 }
 
 /**
+ * Génère un market recap pour les 4 catégories: Equity, FX, Credit, Rates
+ */
+async function generateMarketRecap(articles) {
+    console.log('📊 Generating market recap from real data...');
+
+    // Filtrer les articles pertinents pour les marchés
+    const marketArticles = articles.filter(a =>
+        a.category === 'finance' || a.category === 'bourse'
+    );
+
+    if (marketArticles.length === 0) {
+        return {
+            equity: 'Aucune donnée disponible pour le moment.',
+            fx: 'Aucune donnée disponible pour le moment.',
+            credit: 'Aucune donnée disponible pour le moment.',
+            rates: 'Aucune donnée disponible pour le moment.'
+        };
+    }
+
+    // Analyser les articles pour extraire les informations clés
+    const recap = {
+        equity: analyzeEquityMarket(marketArticles),
+        fx: analyzeFXMarket(marketArticles),
+        credit: analyzeCreditMarket(marketArticles),
+        rates: analyzeRatesMarket(marketArticles)
+    };
+
+    console.log('✅ Market recap generated from real data');
+    return recap;
+}
+
+/**
+ * Analyse le marché des actions (Equity)
+ */
+function analyzeEquityMarket(articles) {
+    const equityKeywords = ['stock', 'equity', 'shares', 'dow', 'nasdaq', 's&p', 'cac 40', 'ftse', 'dax', 'nikkei', 'index', 'market'];
+    const equityArticles = articles.filter(a =>
+        equityKeywords.some(kw => a.title.toLowerCase().includes(kw) || a.content.toLowerCase().includes(kw))
+    );
+
+    if (equityArticles.length === 0) {
+        return 'Pas de mouvements significatifs sur les marchés actions aujourd\'hui.';
+    }
+
+    // Extraire les tendances (hausse/baisse)
+    const movements = extractMarketMovements(equityArticles);
+    const topArticle = equityArticles[0];
+
+    return `${movements} ${topArticle.title.substring(0, 100)}...`;
+}
+
+/**
+ * Analyse le marché des changes (FX)
+ */
+function analyzeFXMarket(articles) {
+    const fxKeywords = ['dollar', 'euro', 'yen', 'pound', 'currency', 'forex', 'fx', 'exchange rate', 'usd', 'eur', 'gbp', 'jpy'];
+    const fxArticles = articles.filter(a =>
+        fxKeywords.some(kw => a.title.toLowerCase().includes(kw) || a.content.toLowerCase().includes(kw))
+    );
+
+    if (fxArticles.length === 0) {
+        return 'Pas de mouvements significatifs sur les devises aujourd\'hui.';
+    }
+
+    const movements = extractMarketMovements(fxArticles);
+    const topArticle = fxArticles[0];
+
+    return `${movements} ${topArticle.title.substring(0, 100)}...`;
+}
+
+/**
+ * Analyse le marché du crédit
+ */
+function analyzeCreditMarket(articles) {
+    const creditKeywords = ['bond', 'credit', 'debt', 'yield', 'spread', 'corporate bond', 'treasury', 'obligation'];
+    const creditArticles = articles.filter(a =>
+        creditKeywords.some(kw => a.title.toLowerCase().includes(kw) || a.content.toLowerCase().includes(kw))
+    );
+
+    if (creditArticles.length === 0) {
+        return 'Pas de mouvements significatifs sur les marchés crédit aujourd\'hui.';
+    }
+
+    const movements = extractMarketMovements(creditArticles);
+    const topArticle = creditArticles[0];
+
+    return `${movements} ${topArticle.title.substring(0, 100)}...`;
+}
+
+/**
+ * Analyse le marché des taux
+ */
+function analyzeRatesMarket(articles) {
+    const ratesKeywords = ['interest rate', 'taux', 'fed', 'ecb', 'central bank', 'monetary policy', 'rate hike', 'rate cut', 'inflation'];
+    const ratesArticles = articles.filter(a =>
+        ratesKeywords.some(kw => a.title.toLowerCase().includes(kw) || a.content.toLowerCase().includes(kw))
+    );
+
+    if (ratesArticles.length === 0) {
+        return 'Pas de mouvements significatifs sur les taux d\'intérêt aujourd\'hui.';
+    }
+
+    const movements = extractMarketMovements(ratesArticles);
+    const topArticle = ratesArticles[0];
+
+    return `${movements} ${topArticle.title.substring(0, 100)}...`;
+}
+
+/**
+ * Extrait les mouvements de marché (hausse/baisse) des articles
+ */
+function extractMarketMovements(articles) {
+    const bullishWords = ['rise', 'gain', 'up', 'surge', 'rally', 'climb', 'advance', 'hausse', 'monte', 'progresse'];
+    const bearishWords = ['fall', 'drop', 'down', 'decline', 'plunge', 'slide', 'baisse', 'chute', 'recule'];
+
+    let bullishCount = 0;
+    let bearishCount = 0;
+
+    articles.forEach(article => {
+        const text = (article.title + ' ' + article.content).toLowerCase();
+        bullishWords.forEach(word => {
+            if (text.includes(word)) bullishCount++;
+        });
+        bearishWords.forEach(word => {
+            if (text.includes(word)) bearishCount++;
+        });
+    });
+
+    if (bullishCount > bearishCount) {
+        return 'Tendance haussière observée.';
+    } else if (bearishCount > bullishCount) {
+        return 'Tendance baissière observée.';
+    } else {
+        return 'Marchés mixtes.';
+    }
+}
+
+/**
  * Génère tous les résumés (global + par catégorie)
  */
 async function generateAllSummaries(articlesByCategory) {
@@ -255,11 +393,15 @@ async function generateAllSummaries(articlesByCategory) {
         }
     }
 
+    // Market recap
+    const marketRecap = await generateMarketRecap(allArticles);
+
     console.log('✅ All summaries generated\n');
 
     return {
         daily: dailySummary,
-        byCategory: categorySummaries
+        byCategory: categorySummaries,
+        marketRecap: marketRecap
     };
 }
 
@@ -267,5 +409,6 @@ module.exports = {
     generateDailySummary,
     generateCategorySummary,
     analyzeArticle,
-    generateAllSummaries
+    generateAllSummaries,
+    generateMarketRecap
 };
